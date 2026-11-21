@@ -1,4 +1,4 @@
-# scrcap
+# ELKS-scrcap
 
 [Download 0.2.0](https://github.com/l00nix/scrcap/releases/tag/v0.2.0) · [Integration status](integration/README.md)
 
@@ -53,11 +53,27 @@ scrcap --watch /root >/tmp/cap.log 2>&1 &
 # Send SIGUSR1 to that process for each capture; SIGTERM stops it.
 ```
 
-`--hotkey /root` is an optional **HP-only** Alt+period listener requiring a compatible
-kernel patch. The legacy patch is retained in `kernel/` for reference, is not applied
-by the build/install scripts, and is not a promise of compatibility with current
-upstream kernels. Ordinary, delayed and SIGUSR1 captures need no hotkey patch.
 `--image FILE` is for offline test fixtures, not live hardware.
+
+### Optional Alt + . hotkey and the kernel patch
+
+**Ordinary, delayed and SIGUSR1-triggered captures do not need this patch.**
+It is only needed for `scrcap --hotkey /root`, the optional **HP-only** background
+listener that captures when Alt + . is pressed while another application is active.
+
+The [legacy hotkey integration](kernel/) adds a keyboard hook and a small event
+interface in the kernel. The hook records the shortcut; the background scrcap
+process reads the event and performs the capture and file write. No screenshot
+or filesystem work runs inside the keyboard interrupt. A renewable three-second
+lease stops an abandoned listener from permanently reserving the shortcut.
+
+Using it requires integrating the patch into a compatible HP firmware-aware ELKS
+source tree, rebuilding the kernel and booting that kernel. Installing scrcap alone
+cannot add this keyboard support. The build and install scripts do not apply the
+patch, and the retained legacy code has not been validated against current upstream
+kernels. An unsupported kernel reports “kernel patch required”; use `-d` or
+`--watch` instead. This patch is separate from the external-application build patch
+and does not change the BMP/PBM output formats.
 
 ## Build and install
 
@@ -89,10 +105,13 @@ are not hardware captures. See [validation](docs/TESTING.md) for this release.
 
 ## Origins and license
 
-Developed by Alexander Rau with AI assistance, originally as part of the
+Developed by [@l00nix](https://github.com/l00nix) with AI assistance, originally as part of the
 [HP 200LX ELX suite](https://github.com/l00nix/HP-200LX-elx-suite).
 The standalone source starts from suite commit `a2cc3f3`; historical suite releases
 retain their original names. ELKS provides the operating system, libc and toolchain.
 Project code is [GPL-2.0-or-later](COPYING). Existing attribution is retained.
 
-Inspired by GEMCAP's hotkey-to-file workflow; no GEMCAP source or binaries are included.
+Inspired by [GEMCAP](https://www.ledudu.com/HPLX/super7.html), Natural Software's
+DOS resident screen-capture utility, documented in the preserved S.U.P.E.R. archive
+under “Screen Capture.” GEMCAP saved GEM `.IMG` files; ELKS-scrcap uses BMP/PBM.
+The hotkey-to-file workflow is the inspiration; no GEMCAP source or binaries are included.

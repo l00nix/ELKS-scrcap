@@ -1,0 +1,10 @@
+scrcap 0.2.0
+scrcap [options] [new-file.bmp]
+-f bmp|pbm selects format; -i inverts; -d SECONDS delays; -q quiet.
+--backend auto|hp|cga: default auto detects HP, otherwise CGA mode 6.
+IBM CGA mode 6/page 0; HP also 80x25 text 2/3. Needs /dev/kmem.
+No filename: CAP0000.BMP etc. Existing files are never overwritten.
+--watch DIR: SIGUSR1 capture, SIGTERM stop. Redirect output to a log.
+--hotkey DIR needs a separate compatible HP kernel patch.
+Project: https://github.com/l00nix/scrcap
+License: GPL-2.0-or-later; see copying.

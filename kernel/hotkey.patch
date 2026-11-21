@@ -1,0 +1,109 @@
+--- a/elks/arch/i86/drivers/char/mem.c
++++ b/elks/arch/i86/drivers/char/mem.c
+@@ -93,12 +93,21 @@
+     return len;
+ }
+ 
++#ifdef CONFIG_HP200LX_FW
++#include "scrcap-impl.h"
++#endif
++
+ static int kmem_ioctl(struct inode *inode, struct file *file, int cmd, char *arg)
+ {
+     unsigned short retword;
+     struct mem_usage mu;
+ 
+     switch (cmd) {
++#ifdef CONFIG_HP200LX_FW
++    case 0x4501: /* scrcap acquire/renew and read event counter */
++    case 0x4502: /* scrcap release */
++        return scrcap_ioctl(cmd,arg);
++#endif
+     case MEM_GETTASK:
+         retword = (unsigned)task;
+         break;
+--- a/elks/arch/i86/drivers/char/kbd-scancode.c
++++ b/elks/arch/i86/drivers/char/kbd-scancode.c
+@@ -42,6 +42,9 @@
+ #include <arch/system.h>
+ #include "console.h"
+ 
++#ifdef CONFIG_HP200LX_FW
++extern int scrcap_key(unsigned, unsigned, unsigned);
++#endif
+ static void keyboard_irq(int irq, struct pt_regs *regs);
+ static void set_leds(void);
+ static int kb_read(void);
+@@ -232,6 +235,10 @@
+ 	E0key = 1;
+ 	E0Prefix = 0;
+     }
++
++#ifdef CONFIG_HP200LX_FW
++    if (scrcap_key((unsigned)code, ModeState, (unsigned)E0key)) return;
++#endif
+ 
+     /* high bit set when key released */
+     keyReleased = code & 0x80;
+--- /dev/null
++++ b/elks/arch/i86/drivers/char/scrcap-state.h
+@@ -0,0 +1,32 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later
++ * Pure state machine shared with tests. Call under saved interrupt flags.
++ * A three-second renewable lease prevents a dead listener owning the key.
++ */
++struct scrcap_state {
++    int owner;
++    unsigned long renewed;
++    unsigned count;
++    unsigned char down;
++};
++static struct scrcap_state scrcap;
++static int scrcap_live(unsigned long now, unsigned hz) {
++    return scrcap.owner && now-scrcap.renewed < 3UL*hz;
++}
++static int scrcap_lease(int pid,unsigned long now,unsigned hz) {
++    if(scrcap_live(now,hz) && scrcap.owner!=pid) return -1;
++    if(!scrcap_live(now,hz)) scrcap.down=0;
++    scrcap.owner=pid; scrcap.renewed=now;
++    return 0;
++}
++static int scrcap_scan(unsigned code,unsigned modifiers,unsigned extended,
++                       unsigned long now,unsigned hz) {
++    if(extended || (code&0x7f)!=0x34) return 0;
++    if(code&0x80) {
++        int consumed=scrcap.down;
++        scrcap.down=0; return consumed;
++    }
++    if(!scrcap_live(now,hz)) { scrcap.down=0; return 0; }
++    if(scrcap.down) return 1; /* Suppress typematic repeats until release. */
++    if((modifiers&0x0f)!=0x08) return 0; /* Alt only, no Ctrl/Shift. */
++    scrcap.down=1; ++scrcap.count; return 1;
++}
+--- /dev/null
++++ b/elks/arch/i86/drivers/char/scrcap-impl.h
+@@ -0,0 +1,24 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later
++ * Included by mem.c under CONFIG_HP200LX_FW. No allocation, screen access,
++ * filesystem work or BIOS calls in the keyboard interrupt.
++ */
++#include "scrcap-state.h"
++int scrcap_key(unsigned code,unsigned modifiers,unsigned extended) {
++    return scrcap_scan(code,modifiers,extended,jiffies,HZ);
++}
++static int scrcap_ioctl(int cmd,char *arg) {
++    flag_t flags;
++    unsigned count;
++    int result=0;
++    save_flags(flags); clr_irq();
++    if(cmd==0x4501) {
++        if(scrcap_lease(current->pid,jiffies,HZ)<0) result=-EBUSY;
++    } else {
++        if(scrcap.owner==current->pid) { scrcap.owner=0; scrcap.down=0; }
++        else result=-EPERM;
++    }
++    count=scrcap.count;
++    restore_flags(flags);
++    if(!result) put_user(count,arg);
++    return result;
++}

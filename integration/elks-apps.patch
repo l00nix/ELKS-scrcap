@@ -1,7 +1,8 @@
 From 79dfbd66927d2cbe1e9633c386afcd459a173a6b Mon Sep 17 00:00:00 2001
 From: Alexander Rau <4390380+l00nix@users.noreply.github.com>
 Date: Sat, 21 Nov 2026 06:47:18 -0500
-Subject: [PATCH] Add Cmdr and scrcap external builds and HD install entries
+Subject: [PATCH 1/2] Add Cmdr and scrcap external builds and HD install
+ entries
 
 ---
  buildext.sh             | 30 ++++++++++++++++++++++++++++++
@@ -9,7 +10,7 @@ Subject: [PATCH] Add Cmdr and scrcap external builds and HD install entries
  2 files changed, 37 insertions(+)
 
 diff --git a/buildext.sh b/buildext.sh
-index 39f0a05..6f04541 100755
+index 39f0a05a..6f04541a 100755
 --- a/buildext.sh
 +++ b/buildext.sh
 @@ -16,6 +16,8 @@
@@ -64,7 +65,7 @@ index 39f0a05..6f04541 100755
      if [ -n "$WATCOM" ] ; then
          owc_libc
 diff --git a/elkscmd/ExtApplications b/elkscmd/ExtApplications
-index 2123fc3..ad4a589 100644
+index 2123fc38..ad4a5897 100644
 --- a/elkscmd/ExtApplications
 +++ b/elkscmd/ExtApplications
 @@ -28,6 +28,13 @@
@@ -81,6 +82,26 @@ index 2123fc3..ad4a589 100644
  # ELKSWeb is installed on HD images only (no floppy-size tags).
  ELKSWeb/build/elksweb                              :elksweb
  ELKSWeb/share/welcome.htm ::root/welcome.htm        :elksweb
--- 
-2.50.1 (Apple Git-155)
 
+From a6db051331b56642f54a0ebdccdbb4d545241fd6 Mon Sep 17 00:00:00 2001
+From: Alexander Rau <4390380+l00nix@users.noreply.github.com>
+Date: Sat, 21 Nov 2026 07:45:31 -0500
+Subject: [PATCH 2/2] Follow ELKS-scrcap repository rename in external builder
+
+---
+ buildext.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/buildext.sh b/buildext.sh
+index 6f04541a..1179d856 100755
+--- a/buildext.sh
++++ b/buildext.sh
+@@ -382,7 +382,7 @@ scrcap()
+     echo "Building scrcap..."
+     cd "$TOPDIR/extapps"
+     if [ ! -d scrcap ] ; then
+-        git clone https://github.com/l00nix/scrcap.git scrcap
++        git clone https://github.com/l00nix/ELKS-scrcap.git scrcap
+     fi
+     cd scrcap
+     git pull --ff-only

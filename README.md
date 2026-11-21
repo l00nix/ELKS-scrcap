@@ -1,10 +1,16 @@
 # ELKS-scrcap
 
-[Download 0.2.0](https://github.com/l00nix/scrcap/releases/tag/v0.2.0) · [Integration status](integration/README.md)
+[Download 0.2.0](https://github.com/l00nix/ELKS-scrcap/releases/tag/v0.2.0) · [Integration status](integration/README.md)
 
-Lossless monochrome screenshots for [ELKS](https://github.com/ghaerr/elks).
-The executable is **`scrcap`** (formerly `elxcap` / ELXcap).
-Save a 640x200 screen as 1-bit BMP or binary PBM without changing the display mode.
+A screen-capture utility for [ELKS](https://github.com/ghaerr/elks) on 8086/8088-based
+PCs. The project targets multiple display adapters and resolutions, with the
+HP 200LX as one supported platform. The executable remains **`scrcap`**
+(formerly `elxcap` / ELXcap), preserving 8.3-compatible installed names.
+
+**Release 0.2.0 currently captures 640×200 monochrome images only**, through the
+backends below. It saves 1-bit BMP or binary PBM without changing the display mode.
+This is the current implementation limit, not the intended scope of the project.
+See the [display support plan and GEMCAP comparison](docs/DISPLAYS.md).
 
 ## Screenshot
 
@@ -17,7 +23,7 @@ The original 640×200 pixels are preserved. The displayed names and versions pre
 the standalone rename. [Original BMP](docs/images/dash.bmp) ·
 [Capture details](docs/images/README.md).
 
-## Supported displays
+## Currently supported displays (0.2.0)
 
 | Backend | Support |
 | --- | --- |

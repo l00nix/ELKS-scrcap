@@ -1,10 +1,23 @@
-scrcap 0.2.0
+scrcap 0.5.0 - screen capture for IBM-compatible ELKS PCs
 scrcap [options] [new-file.bmp]
 -f bmp|pbm selects format; -i inverts; -d SECONDS delays; -q quiet.
---backend auto|hp|cga: default auto detects HP, otherwise CGA mode 6.
-IBM CGA mode 6/page 0; HP also 80x25 text 2/3. Needs /dev/kmem.
+--backend auto|pc|hp|cga|ega|vga (default auto).
+PC text 0..3/7, CGA 6, EGA 10h, VGA 12h; monochrome up to 640x480.
+--rows 1..60 and --height 8|14|16 override text BDA geometry.
+--font FILE: 256 glyphs, height bytes per glyph, MSB-left scanlines.
+Text uses 8-pixel cells; cursor/blink/9th dot are not reproduced.
+EGA/VGA loaded font RAM is not read; fallback font is scaled unless
+--font supplies an exact font. Success output identifies font source.
+Mode 10h requires --backend ega or vga. Original EGA additionally needs
+--ega-state INDEX,READMAP,MODE: exact known GC state, never guessed.
+Planar graphics use index bit 2 (red plane), GEMCAP-style monochrome.
+Use standard BIOS layouts; capture while drawing is idle. Not all VGA modes.
+Requires /dev/kmem (normally root); captures physical console, not telnet.
 No filename: CAP0000.BMP etc. Existing files are never overwritten.
 --watch DIR: SIGUSR1 capture, SIGTERM stop. Redirect output to a log.
 --hotkey DIR needs a separate compatible HP kernel patch.
-Project: https://github.com/l00nix/ELKS-scrcap
-License: GPL-2.0-or-later; see copying.
+Example: scrcap --backend pc -d 15 /root/screen.bmp
+Example: scrcap --backend vga -f pbm /root/screen.pbm
+Project and full limits: https://github.com/l00nix/ELKS-scrcap
+Code GPL-2.0-or-later. Fallback font from ELKS console-font-8x8-swan.S,
+GPL-2.0; source and attribution in docs/FONT.md. See copying.

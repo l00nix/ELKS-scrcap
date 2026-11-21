@@ -1,5 +1,5 @@
 # EPT recipe; add to the repository builder's recipes directory.
-DESC="CGA and HP 200LX screen capture"
+DESC="PC text, CGA, EGA/VGA and HP screen capture"
 GIT=https://github.com/l00nix/ELKS-scrcap.git
 BUILD='ELKS="$ELKS" sh build.sh'
 FILES="build/scrcap:/bin/scrcap

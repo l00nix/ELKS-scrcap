@@ -12,11 +12,15 @@ static volatile int stopped,requested;
 static void stop(int sig) { (void)sig; stopped=1; }
 static void request(int sig) { (void)sig; requested=1; }
 static void help(void) {
-    puts("scrcap 0.2.0 - CGA and HP 200LX screenshots for ELKS\n"
+    puts("scrcap 0.5.0 - PC text, CGA, EGA/VGA and HP screenshots for ELKS\n"
          "Usage: scrcap [options] [new-file.bmp]\n"
          "  -f bmp|pbm       Output format (default BMP, regardless of suffix)\n"
          "  -i               Invert output pixels\n"
-         "  --backend MODE   auto (default), hp, or cga\n"
+         "  --backend MODE   auto, pc, hp, cga, ega, vga\n"
+         "  --rows N         Text rows override (1..60)\n"
+         "  --height N       Text glyph height: 8, 14, 16\n"
+         "  --font FILE      Raw 256-glyph font, selected height bytes/glyph\n"
+         "  --ega-state I,R,M Exact current GC index/read-map/mode (EGA only)\n"
          "  -d SECONDS       Delay capture, 0..3600\n"
          "  -q               Quiet success\n"
          "  --watch DIR      Wait for SIGUSR1; save numbered files in DIR\n"
@@ -24,27 +28,39 @@ static void help(void) {
          "  --image FILE     Offline physical-memory fixture, not live hardware\n"
          "  --help / --version\n"
          "No filename: create CAP0000.BMP etc. in current directory.\n"
-         "Supports IBM-compatible CGA mode 6; HP also supports 80x25 text 2/3.\n"
+         "Text 0..3/7, CGA 6, EGA 10h, VGA 12h; monochrome output up to 640x480.\n"
          "No display mode changes. LCD zoom/inversion/cursor are not reproduced.\n"
          "Background listeners should redirect stdout/stderr to a log file.");
 }
 int main(int argc,char **argv) {
-    const char *image=0,*path=0,*dir=0;
+    const char *image=0,*path=0,*dir=0,*fontpath=0;
     int i,fd,pbm=0,invert=0,quiet=0,hotkey=0,result=0;
-    unsigned delay=0,event=0,last=0;
+    unsigned delay=0,event=0,last=0,rows=0,height=0;
     char output[240];
     struct stat st;
     for(i=1;i<argc;i++) {
         const char *s=argv[i];
         if(!strcmp(s,"--help") || !strcmp(s,"-h")) { help(); return 0; }
-        if(!strcmp(s,"--version")) { puts("scrcap 0.2.0"); return 0; }
+        if(!strcmp(s,"--version")) { puts("scrcap 0.5.0"); return 0; }
         if(!strcmp(s,"--backend") && i+1<argc) {
             s=argv[++i];
             if(!strcmp(s,"auto")) cap_backend(0);
             else if(!strcmp(s,"hp")) cap_backend(1);
-            else if(!strcmp(s,"cga")) cap_backend(2);
+            else if(!strcmp(s,"cga")) cap_backend(CAP_CGA);
+            else if(!strcmp(s,"pc")) cap_backend(CAP_PC);
+            else if(!strcmp(s,"ega")) cap_backend(CAP_EGA);
+            else if(!strcmp(s,"vga")) cap_backend(CAP_VGA);
             else goto usage;
         }
+        else if((!strcmp(s,"--rows") || !strcmp(s,"--height")) && i+1<argc) {
+            int isrows=!strcmp(s,"--rows");char *end;unsigned long value;
+            s=argv[++i];if(!*s || *s<'0' || *s>'9')goto usage;
+            value=strtoul(s,&end,10);if(*end)goto usage;
+            if(isrows) { if(value<1 || value>60)goto usage;rows=(unsigned)value; }
+            else { if(value!=8 && value!=14 && value!=16)goto usage;height=(unsigned)value; }
+        }
+        else if(!strcmp(s,"--font") && i+1<argc)fontpath=argv[++i];
+        else if(!strcmp(s,"--ega-state") && i+1<argc) { if(cap_ega_state(argv[++i])<0)goto usage; }
         else if(!strcmp(s,"-i")) invert=1;
         else if(!strcmp(s,"-q")) quiet=1;
         else if(!strcmp(s,"-f") && i+1<argc) {
@@ -67,6 +83,7 @@ int main(int argc,char **argv) {
         if(stat(dir,&st)<0) goto error;
         if(!S_ISDIR(st.st_mode)) { errno=ENOTDIR; goto error; }
     }
+    cap_text(rows,height,fontpath);
     signal(SIGINT,stop); signal(SIGTERM,stop); signal(SIGHUP,stop); signal(SIGUSR1,request);
     fd=cap_open(image); if(fd<0) goto error;
     while(delay-- && !stopped) sleep(1);
@@ -95,7 +112,7 @@ int main(int argc,char **argv) {
             if(result) {
                 if(dir) fprintf(stderr,"scrcap: %s: %s\n",cap_error,strerror(errno));
                 else break;
-            } else if(!quiet) { printf("Saved %s\n",path?path:output); fflush(stdout); }
+            } else if(!quiet) { printf("Saved %s (%ux%u; %s)\n",path?path:output,cap_width,cap_height,cap_font); fflush(stdout); }
         }
         if(dir && !stopped) usleep(100000UL);
     } while(dir && !stopped);

@@ -54,21 +54,21 @@ with tempfile.TemporaryDirectory(prefix='scrcap-') as tmp:
     run(['--backend','cga','--image',str(root/'pc.img'),'-i','pcinv.bmp'])
     assert bmp(root/'pcinv.bmp')==expected
     run(['--backend','hp','--image',str(root/'pc.img'),'nohp.bmp'],1)
-    run(['--backend','vga','--image',str(image)],2)
+    run(['--backend','invalid','--image',str(image)],2)
     # Text: a nonzero active page, non-ASCII code-page glyph, reverse and hidden.
     t=memory(3);struct.pack_into('<H',t,0x44e,4096);t[0x462]=1
     glyph=bytes([0x18,0x3c,0x66,0x7e,0x66,0x66,0,0]);high=bytes([0x81,0x42,0x24,0x18,0x18,0x24,0x42,0x81])
     t[0xffa6e+65*8:0xffa6e+66*8]=glyph;t[0x9fc00:0x9fc08]=high
     t[0xb9000:0xb9008]=bytes([65,7,65,0x70,128,7,65,0])
     text=root/'text.img';text.write_bytes(t)
-    run(['--backend','cga','--image',str(text),'pctext.bmp'],1)
+    run(['--backend','cga','--image',str(text),'pctext.bmp'])
     run(['--image',str(text),'text.bmp'])
     pixels=bmp(root/'text.bmp')
     for y in range(8):assert pixels[y*80:y*80+4]==bytes([glyph[y],glyph[y]^255,high[y],0])
     assert pixels[640:]==bytes(15360)
     for name,off,value in [('mode',0x449,7),('columns',0x44a,40),('rows',0x484,42),('page',0x44f,0xff),('identity',0xfd88e,0)]:
         bad=bytearray(t);bad[off]=value;(root/'bad.img').write_bytes(bad)
-        run(['--image',str(root/'bad.img'),name+'.bmp'],1)
+        run(['--backend','hp','--image',str(root/'bad.img'),name+'.bmp'],1)
         assert not (root/(name+'.bmp')).exists()
     (root/'short.img').write_bytes(b[:8192])
     run(['--image',str(root/'short.img'),'short.bmp'],1)

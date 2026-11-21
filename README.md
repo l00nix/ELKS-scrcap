@@ -1,16 +1,16 @@
 # ELKS-scrcap
 
-[Download 0.2.0](https://github.com/l00nix/ELKS-scrcap/releases/tag/v0.2.0) · [Integration status](integration/README.md)
+[Download 0.5.0](https://github.com/l00nix/ELKS-scrcap/releases/tag/v0.5.0) · [Integration status](integration/README.md)
 
 A screen-capture utility for [ELKS](https://github.com/ghaerr/elks) on 8086/8088-based
 PCs. The project targets multiple display adapters and resolutions, with the
 HP 200LX as one supported platform. The executable remains **`scrcap`**
 (formerly `elxcap` / ELXcap), preserving 8.3-compatible installed names.
 
-**Release 0.2.0 currently captures 640×200 monochrome images only**, through the
-backends below. It saves 1-bit BMP or binary PBM without changing the display mode.
-This is the current implementation limit, not the intended scope of the project.
-See the [display support plan and GEMCAP comparison](docs/DISPLAYS.md).
+**Version 0.5 adds variable-resolution output, generic PC text and EGA/VGA
+planar graphics**, alongside the existing HP backend. It saves monochrome BMP/PBM
+up to 640×480 without changing the display mode. See the
+[display matrix, font policy and hardware limits](docs/DISPLAYS.md).
 
 ## Screenshot
 
@@ -23,27 +23,35 @@ The original 640×200 pixels are preserved. The displayed names and versions pre
 the standalone rename. [Original BMP](docs/images/dash.bmp) ·
 [Capture details](docs/images/README.md).
 
-## Currently supported displays (0.2.0)
+## Display support in 0.5
 
-| Backend | Support |
+| Source | Capture |
 | --- | --- |
-| `auto` (default) | Detect HP 200LX firmware; otherwise use the CGA backend |
-| `cga` | IBM-compatible CGA mode 6, 640x200, page 0 |
-| `hp` | HP 200LX mode 6 and 80x25 text modes 2/3 using the machine's ROM font |
+| CGA mode 6 | 640×200, page 0 |
+| PC colour and MDA/Hercules text | 40/80 columns; active BIOS page; 8/14/16-scanline glyphs |
+| EGA/VGA text | Variable rows, including 43/50 lines; up to 640×480 |
+| EGA mode 10h | 640×350 monochrome; original EGA needs an explicit known register profile |
+| VGA modes 10h / 12h | 640×350 / 640×480 monochrome |
+| HP 200LX | Existing mode 6 and 80×25 text capture with firmware fonts |
 
-The generic CGA path does not require an HP ROM or an HP kernel. It is fixture-tested;
-other physical ELKS machines still need validation. Generic PC text, MDA, Hercules,
-other VGA/EGA modes and PC-98 are not implemented. Unsupported modes/pages are rejected.
-The tool reads `/dev/kmem` (normally as root) and captures the physical console,
-not a serial terminal. Hardware cursor, LCD zoom and LCD inversion are not reproduced.
-HP ROM data is read on the device and is not distributed with this project.
+Generic text has been captured on a physical Amstrad PPC. EGA/VGA graphics have
+passed fixtures, register mocks and native-code tests on QEMU VGA; physical EGA/VGA
+acceptance remains pending. This does not mean every graphics mode is supported.
+
+Text uses 8-pixel-wide cells. EGA/VGA loaded font RAM is not read: a supplied font
+or a labelled fallback is used. Graphics use GEMCAP's red-plane monochrome mapping.
+See [full limitations and backend selection](docs/DISPLAYS.md) before using original
+EGA. The tool reads `/dev/kmem` and captures the physical console, not a serial or
+Telnet session. Hardware cursor, LCD zoom and LCD inversion are not reproduced.
+HP ROM data is read on the device and is not distributed.
 
 ## Use
 
 ```sh
 scrcap /root/screen.bmp
 scrcap -f pbm /root/screen.pbm
-scrcap --backend cga -d 15 /root/screen.bmp
+scrcap --backend pc -d 15 /root/screen.bmp
+scrcap --backend vga /root/vga.bmp
 scrcap -q -d 15 >/tmp/cap.log 2>&1 &
 ```
 
@@ -115,7 +123,8 @@ Developed by [@l00nix](https://github.com/l00nix) with AI assistance, originally
 [HP 200LX ELX suite](https://github.com/l00nix/HP-200LX-elx-suite).
 The standalone source starts from suite commit `a2cc3f3`; historical suite releases
 retain their original names. ELKS provides the operating system, libc and toolchain.
-Project code is [GPL-2.0-or-later](COPYING). Existing attribution is retained.
+Project code is [GPL-2.0-or-later](COPYING). The [fallback font](docs/FONT.md)
+comes from the GPL-2.0 ELKS source. Existing attribution is retained.
 
 Inspired by [GEMCAP](https://www.ledudu.com/HPLX/super7.html), Natural Software's
 DOS resident screen-capture utility, documented in the preserved S.U.P.E.R. archive

@@ -35,6 +35,17 @@ int main(void) {
     for(failure=1;failure<=3;failure++) {
         calls=0;assert(cap_save(path,0,0)==-1);assert(stat(path,&st)==-1 && errno==ENOENT);
     }
-    assert(!rmdir(dir));puts("PASS short writes, EINTR, ENOSPC, zero writes, close errors and partial-file cleanup");
+    failure=0;calls=0;
+    assert(!geometry(13,3));
+    pixel_row(0)[0]=0x11;pixel_row(0)[1]=0xff;
+    pixel_row(1)[0]=0x22;pixel_row(1)[1]=0xff;
+    pixel_row(2)[0]=0x33;pixel_row(2)[1]=0xff;
+    assert(!cap_save(path,0,0));
+    { unsigned char b[74];int f=open(path,O_RDONLY);
+      assert(f>=0 && read(f,b,sizeof(b))==74);close(f);
+      assert(b[62]==0x33 && b[63]==0xf8 && !b[64] && !b[65]);
+      assert(b[66]==0x22 && b[70]==0x11); }
+    assert(!unlink(path));
+    assert(!rmdir(dir));puts("PASS short writes, EINTR, ENOSPC, zero writes, close errors, partial-file cleanup and non-byte-aligned BMP padding");
     return 0;
 }

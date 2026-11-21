@@ -18,11 +18,11 @@ SIZE=${SIZE:-$(command -v ia16-elf-size)}
 OBJDUMP=${OBJDUMP:-$(command -v ia16-elf-objdump)}
 flags="-Os -melks-libc -march=i8086 -mtune=i8086 -mcmodel=small -mno-segment-relocation-stuff -fno-builtin-printf -fno-builtin-fprintf -Wall -Wextra -Werror -ffunction-sections -fdata-sections -fstack-usage"
 
-for name in main capture; do
+for name in main capture pcvideo; do
     "$CC" $flags -Isrc -I"$ELKS/include" -I"$ELKS/libc/include" -I"$ELKS/elks/include" -c "src/$name.c" -o "$BUILD/obj/$name.o"
 done
 "$CC" $flags -Wl,--gc-sections,-Map,"$BUILD/scrcap.map" -maout-heap=2048 -maout-stack=2048 \
-    "$BUILD/obj/main.o" "$BUILD/obj/capture.o" -o "$BUILD/scrcap"
+    "$BUILD/obj/main.o" "$BUILD/obj/capture.o" "$BUILD/obj/pcvideo.o" -o "$BUILD/scrcap"
 "$SIZE" "$BUILD/scrcap.elf"
 "$OBJDUMP" -d -z --insn-width=16 -M intel,i8086 "$BUILD/scrcap.elf" > "$BUILD/scrcap.dis"
 python3 toolchain/isa-audit.py "$BUILD/scrcap" "$BUILD/scrcap.elf" "$BUILD/scrcap.dis" --map "$BUILD/scrcap.map" --output "$BUILD/scrcap-audit.json"

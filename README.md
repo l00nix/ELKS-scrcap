@@ -6,6 +6,17 @@ Lossless monochrome screenshots for [ELKS](https://github.com/ghaerr/elks).
 The executable is **`scrcap`** (formerly `elxcap` / ELXcap).
 Save a 640x200 screen as 1-bit BMP or binary PBM without changing the display mode.
 
+## Screenshot
+
+![ELXcap screenshot of the ELXdash battery and display gauges](docs/images/dash.png)
+
+ELXdash 0.2.0-test4 on the single-speed HP 200LX, saved by ELXcap
+and retrieved on 19 October 2026. This shows the capture output;
+scrcap itself is a command-line utility.
+The original 640×200 pixels are preserved. The displayed names and versions predate
+the standalone rename. [Original BMP](docs/images/dash.bmp) ·
+[Capture details](docs/images/README.md).
+
 ## Supported displays
 
 | Backend | Support |

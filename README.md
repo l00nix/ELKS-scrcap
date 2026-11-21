@@ -1,5 +1,7 @@
 # scrcap
 
+[Download 0.2.0](https://github.com/l00nix/scrcap/releases/tag/v0.2.0) · [Integration status](integration/README.md)
+
 Lossless monochrome screenshots for [ELKS](https://github.com/ghaerr/elks).
 The executable is **`scrcap`** (formerly `elxcap` / ELXcap).
 Save a 640x200 screen as 1-bit BMP or binary PBM without changing the display mode.
@@ -71,9 +73,7 @@ the recipe alone does not make the package available from the default EPT server
 make test
 ```
 
-Host tests require a C compiler and Python 3. On macOS, Cmdr's legacy formatted
-output calls may need `CFLAGS='-O2 -Wall -Wextra -Werror -Wno-misleading-indentation -Wno-deprecated-declarations -Isrc'`.
-Native builds are additionally checked with `elksemu`; synthetic memory fixtures
+Host tests require a C compiler and Python 3. Native builds are additionally checked with `elksemu`; synthetic memory fixtures
 are not hardware captures. See [validation](docs/TESTING.md) for this release.
 
 ## Origins and license

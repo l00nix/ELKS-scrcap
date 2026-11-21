@@ -1,0 +1,86 @@
+From 79dfbd66927d2cbe1e9633c386afcd459a173a6b Mon Sep 17 00:00:00 2001
+From: Alexander Rau <4390380+l00nix@users.noreply.github.com>
+Date: Sat, 21 Nov 2026 06:47:18 -0500
+Subject: [PATCH] Add Cmdr and scrcap external builds and HD install entries
+
+---
+ buildext.sh             | 30 ++++++++++++++++++++++++++++++
+ elkscmd/ExtApplications |  7 +++++++
+ 2 files changed, 37 insertions(+)
+
+diff --git a/buildext.sh b/buildext.sh
+index 39f0a05..6f04541 100755
+--- a/buildext.sh
++++ b/buildext.sh
+@@ -16,6 +16,8 @@
+ #       dflat           ia16-elf-gcc    D-Flat TUI memopad/library
+ #       elkirc          ia16-elf-gcc    IRC for ELKS
+ #       elksdigger      ia16-elf-gcc    Digger for ELKS
++#       cmdr            ia16-elf-gcc    Two-panel ANSI file manager
++#       scrcap          ia16-elf-gcc    CGA/HP monochrome screenshot utility
+ #       elksweb         ia16-elf-gcc    Graphical HTTP browser for IBM PC compatibles
+ #       owc_libc        OpenWatcom      ELKS C Library compiled by OWC
+ #       owc_elkscmd     OpenWatcom      Some elkscmd/ programs compiled by OWC
+@@ -362,6 +364,32 @@ elksweb()
+     echo "ELKSWeb build complete"
+ }
+ 
++cmdr()
++{
++    echo "Building cmdr..."
++    cd "$TOPDIR/extapps"
++    if [ ! -d cmdr ] ; then
++        git clone https://github.com/l00nix/cmdr.git cmdr
++    fi
++    cd cmdr
++    git pull --ff-only
++    ELKS="$TOPDIR" sh build.sh
++    echo "cmdr build complete"
++}
++
++scrcap()
++{
++    echo "Building scrcap..."
++    cd "$TOPDIR/extapps"
++    if [ ! -d scrcap ] ; then
++        git clone https://github.com/l00nix/scrcap.git scrcap
++    fi
++    cd scrcap
++    git pull --ff-only
++    ELKS="$TOPDIR" sh build.sh
++    echo "scrcap build complete"
++}
++
+ # build all extapps repos
+ make_all()
+ {
+@@ -371,6 +399,8 @@ make_all()
+     elkirc
+     elksdigger
+     elksweb
++    cmdr
++    scrcap
+     gem
+     if [ -n "$WATCOM" ] ; then
+         owc_libc
+diff --git a/elkscmd/ExtApplications b/elkscmd/ExtApplications
+index 2123fc3..ad4a589 100644
+--- a/elkscmd/ExtApplications
++++ b/elkscmd/ExtApplications
+@@ -28,6 +28,13 @@
+ # ------------- ----------------------------------------------------------
+ #
+ # ia16 builds
++# Cmdr and scrcap are HD-only by default (no floppy-size tags).
++cmdr/build/cmdr ::bin/cmdr :cmdr
++cmdr/COPYING ::lib/cmdr/copying :cmdr
++cmdr/USAGE.TXT ::lib/cmdr/usage.txt :cmdr
++scrcap/build/scrcap ::bin/scrcap :scrcap
++scrcap/COPYING ::lib/scrcap/copying :scrcap
++scrcap/USAGE.TXT ::lib/scrcap/usage.txt :scrcap
+ # ELKSWeb is installed on HD images only (no floppy-size tags).
+ ELKSWeb/build/elksweb                              :elksweb
+ ELKSWeb/share/welcome.htm ::root/welcome.htm        :elksweb
+-- 
+2.50.1 (Apple Git-155)
+

@@ -8,6 +8,13 @@ and IA16 GCC 6.3.0. The build explicitly targets i8086.
 - Native 16-bit executable build and instruction/near-memory audit: PASS.
 - Native tests under elksemu: PASS.
 - Staged install and 8.3 destination path checks: PASS.
+- Patched upstream `./buildext.sh cmdr scrcap` from fresh public clones: PASS.
+- Upstream ExtApplications install selection: PASS.
+- EPT recipe build commands and declared source-file checks: PASS.
+
+Direct builds, external builds and the staged executables had identical SHA-256
+checksums. The published ZIPs contain the tested executable, license and usage guide.
+The full EPT Docker/server publishing cycle was not run; server inclusion is pending.
 
 The emulator test copy uses the isolated LP64 `select` timeval fix supplied by
 `tests/prepare_emulator.py` in Cmdr. This changes the host test harness, not the

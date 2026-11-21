@@ -15,6 +15,7 @@ and IA16 GCC 6.3.0. The build explicitly targets i8086.
 | Physical PPC display appearance after capture | Pending user inspection; user was away |
 | Physical EGA / VGA cards | Not yet tested |
 | Staged install and 8.3 destination checks | PASS |
+| Patched upstream `./buildext.sh scrcap`, public checkout | PASS; identical binary |
 
 The release binary is 14,400 bytes. Its near-memory budget is 54,656 bytes including
 2 KiB heap and 2 KiB stack, leaving 10,864 bytes before arguments/environment.

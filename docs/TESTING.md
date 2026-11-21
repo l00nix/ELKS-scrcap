@@ -66,8 +66,10 @@ had identical decoded pixels. The font source was PC ROM lower glyphs with
 fallback upper glyphs. Network commands remained responsive after capture.
 
 The test did not switch display modes, replace system binaries or touch the
-bootloader. The local display still needs visual confirmation. Existing gallery images retain
-their [historical HP provenance](images/README.md).
+bootloader. After Cmdr testing ended, the final binary captured a clean PPC login screen
+again without console writes. The [capture and provenance](images/README.md#ppc-text-capture-050)
+are included alongside the historical HP images. The local display still needs
+visual confirmation.
 
 ## Remaining acceptance
 
